@@ -23,26 +23,25 @@ public class ToAggregate {
 			/**
 			 * 2.Check if that date is the first day of the month
 			 * 
-			 * yes: go to step 3
-			 * no: Aggregation skipped
+			 * yes: go to step 3 no: Aggregation skipped
 			 **/
 			if (currentDate.getDayOfMonth() == 1) {
 				/**
-				 *3. Check if the date is January 1st
+				 * 3. Check if the date is January 1st
 				 *
-				 *				 
+				 * 
 				 **/
 				if (currentDate.getDayOfMonth() == 1 && currentDate.getMonthValue() == 1) {
-				
+
 					/**
-					 *  If it's the first day of January,
-					 *3.2 Get data from December of the previous yeart				 
+					 * If it's the first day of January, 
+					 * 3.2 Get data from December of the previous year
 					 **/
 					currentDate = currentDate.minusYears(1);
 				}
 				/**
-				 * If it's not the first day of January,
-				 * 3.1. Get data from the previous month of the year				 
+				 * If it's not the first day of January, 
+				 * 3.1. Get data from the previous month of the year
 				 **/
 				// Calculate the previous month and year
 				LocalDate previousMonth = currentDate.minusMonths(1);
@@ -51,16 +50,8 @@ public class ToAggregate {
 				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM");
 				String previousMonthString = previousMonth.format(formatter);
 				int currentYear = currentDate.getYear();
-				/**			
-				 *4.Check if data for the specified month and year already exists	
-				 *
-				 * if data already exists, message and Insertion skipped, 
-				 * if data is not exist, go to step 5.
-				 **/
-				  if (dataExists(connection, previousMonthString, currentYear)) {
-					  // If Data already exists for the month
-		                System.out.println("Data already exists for the month: " + previousMonthString + "/" + currentYear + ". Insertion skipped.");
-		            } else {
+				
+
 				// Declare variables for each column
 				String month = previousMonthString;
 				String year = String.valueOf(currentYear);
@@ -79,7 +70,7 @@ public class ToAggregate {
 				int number_appear_most4 = 0;
 				int number_appear_most5 = 0;
 				/**
-				 * 5.Select the number of each prize for the month from dw_vietlot				 
+				 * 4 .Select the number of each prize for the month from dw_vietlot table
 				 **/
 				// Calculate amounts for each column
 				String amountQuery = "SELECT SUM(amount_jp1) as a1, SUM(amount_jp2) as a2, SUM(amount_first) as a3, SUM(amount_second) as a4, SUM(amount_third) as a5\n"
@@ -103,7 +94,7 @@ public class ToAggregate {
 					}
 				}
 				/**
-				 * 6.Select the 5 numbers that appear the most in the 7 winning numbers of the month from dw_viettlot
+				 * 5.Select the 5 numbers that appear the most in the 7 winning numbers of the month from dw_viettlot table
 				 **/
 				// Set values for number_appear_most columns
 				String numberAppearQuery = "SELECT number, COUNT(*) AS frequency\n" + "FROM (\n"
@@ -120,7 +111,7 @@ public class ToAggregate {
 						+ "   SELECT number6 AS number FROM dw_vietlot WHERE MONTH(STR_TO_DATE(date, '%d/%m/%Y')) = ?\n"
 						+ "   UNION ALL\n"
 						+ "   SELECT number7 AS number FROM dw_vietlot WHERE MONTH(STR_TO_DATE(date, '%d/%m/%Y')) = ?\n"
-						
+
 						+ ") AS numbers\n" + "GROUP BY number\n" + "ORDER BY frequency DESC\n" + "LIMIT 5";
 
 				try (PreparedStatement numberAppearStatement = connection.prepareStatement(numberAppearQuery)) {
@@ -131,7 +122,7 @@ public class ToAggregate {
 					numberAppearStatement.setInt(5, previousMonth.getMonthValue());
 					numberAppearStatement.setInt(6, previousMonth.getMonthValue());
 					numberAppearStatement.setInt(7, previousMonth.getMonthValue());
-					
+
 					try (ResultSet numberAppearResult = numberAppearStatement.executeQuery()) {
 						int count = 1;
 						while (numberAppearResult.next()) {
@@ -151,41 +142,85 @@ public class ToAggregate {
 							case 5:
 								number_appear_most5 = numberAppearResult.getInt("number");
 								break;
-						
+
 							}
 							count++;
 						}
 					}
 				}
 				/**
-				 * 7. Insert the retrieved data into the aggregate_vietlot table of the database aggregate
+				 * 6.Check if data for the specified month and year already exists 
+				 * 
+				 * no: go to step 6.1
+				 * yes : go to step 6.2
 				 **/
-				
-				String sqlQuery = "INSERT INTO `aggregate`.aggregate_vietlot (month, year, amount_jp1_month, amount_jp2_month, amount_first_month, amount_second_month, amount_third_month, number_appear_most1, number_appear_most2, number_appear_most3, number_appear_most4, number_appear_most5)\n"
-						+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+				if (!dataExists(connection, previousMonthString, currentYear)) {
+					/**
+					 * 6.1 . Insert the retrieved data into the aggregate_vietlot table in the aggregate database		 
+					 **/
+					String sqlQuery = "INSERT INTO `aggregate`.aggregate_vietlot (month, year, amount_jp1_month, amount_jp2_month, amount_first_month, amount_second_month, amount_third_month, number_appear_most1, number_appear_most2, number_appear_most3, number_appear_most4, number_appear_most5)\n"
+							+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-				// Prepare the SQL statement
-				try (PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery)) {
-					// Set values for each parameter
-					preparedStatement.setString(1, month);
-					preparedStatement.setString(2, year);
-					preparedStatement.setDouble(3, amount_jp1_month);
-					preparedStatement.setDouble(4, amount_jp2_month);
-					preparedStatement.setDouble(5, amount_first_month);
-					preparedStatement.setDouble(6, amount_second_month);
-					preparedStatement.setDouble(7, amount_third_month);
-					preparedStatement.setInt(8, number_appear_most1);
-					preparedStatement.setInt(9, number_appear_most2);
-					preparedStatement.setInt(10, number_appear_most3);
-					preparedStatement.setInt(11, number_appear_most4);
-					preparedStatement.setInt(12, number_appear_most5);
+					// Prepare the SQL statement
+					try (PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery)) {
+						// Set values for each parameter
+						preparedStatement.setString(1, month);
+						preparedStatement.setString(2, year);
+						preparedStatement.setDouble(3, amount_jp1_month);
+						preparedStatement.setDouble(4, amount_jp2_month);
+						preparedStatement.setDouble(5, amount_first_month);
+						preparedStatement.setDouble(6, amount_second_month);
+						preparedStatement.setDouble(7, amount_third_month);
+						preparedStatement.setInt(8, number_appear_most1);
+						preparedStatement.setInt(9, number_appear_most2);
+						preparedStatement.setInt(10, number_appear_most3);
+						preparedStatement.setInt(11, number_appear_most4);
+						preparedStatement.setInt(12, number_appear_most5);
 
-					// Execute the query
-					preparedStatement.executeUpdate();
-					System.out.println("Query executed successfully for the previous month: " + previousMonthString
-							+ "/" + currentYear);
+						// Execute the query
+						preparedStatement.executeUpdate();
+						System.out.println("Query executed successfully for the previous month: " + previousMonthString
+								+ "/" + currentYear);
+					}
 				}
-			}} else {
+				/**
+				 * 6.2 . Update the retrieved data to the row with the specified month and year in the aggregate_vietlot table of database aggregate
+
+				 **/
+				else {
+					String updateQuery = "UPDATE `aggregate`.aggregate_vietlot SET " + "amount_jp1_month = ?, "
+							+ "amount_jp2_month = ?, " + "amount_first_month = ?, " + "amount_second_month = ?, "
+							+ "amount_third_month = ?, " + "number_appear_most1 = ?, " + "number_appear_most2 = ?, "
+							+ "number_appear_most3 = ?, " + "number_appear_most4 = ?, " + "number_appear_most5 = ? "
+							+ "WHERE month = ? AND year = ?";
+
+					try (PreparedStatement updateStatement = connection.prepareStatement(updateQuery)) {
+						// Set values for each parameter
+						updateStatement.setDouble(1, amount_jp1_month);
+						updateStatement.setDouble(2, amount_jp2_month);
+						updateStatement.setDouble(3, amount_first_month);
+						updateStatement.setDouble(4, amount_second_month);
+						updateStatement.setDouble(5, amount_third_month);
+						updateStatement.setInt(6, number_appear_most1);
+						updateStatement.setInt(7, number_appear_most2);
+						updateStatement.setInt(8, number_appear_most3);
+						updateStatement.setInt(9, number_appear_most4);
+						updateStatement.setInt(10, number_appear_most5);
+						updateStatement.setString(11, month);
+						updateStatement.setString(12, year);
+
+						// Execute the update
+						int rowsUpdated = updateStatement.executeUpdate();
+
+						if (rowsUpdated > 0) {
+							System.out.println("Update executed successfully for the previous month: "
+									+ previousMonthString + "/" + currentYear);
+						} else {
+							System.out.println("No rows updated. Data for the specified month and year not found.");
+						}
+					}
+				}
+			} else {
 				System.out.println("It's not the first day of the month. Aggregation skipped.");
 			}
 		} catch (SQLException e) {
@@ -193,21 +228,22 @@ public class ToAggregate {
 		}
 
 	}
-		private static boolean dataExists(Connection connection, String month, int year) throws SQLException {
-	        String checkDataQuery = "SELECT COUNT(*) AS count FROM `aggregate`.aggregate_vietlot WHERE month = ? AND year = ?";
-	        
-	        try (PreparedStatement checkDataStatement = connection.prepareStatement(checkDataQuery)) {
-	            checkDataStatement.setString(1, month);
-	            checkDataStatement.setInt(2, year);
 
-	            try (ResultSet resultSet = checkDataStatement.executeQuery()) {
-	                if (resultSet.next()) {
-	                    int count = resultSet.getInt("count");
-	                    return count > 0;
-	                }
-	            }
-	        }
-	        
-	        return false;
-	    }
+	private static boolean dataExists(Connection connection, String month, int year) throws SQLException {
+		String checkDataQuery = "SELECT COUNT(*) AS count FROM `aggregate`.aggregate_vietlot WHERE month = ? AND year = ?";
+
+		try (PreparedStatement checkDataStatement = connection.prepareStatement(checkDataQuery)) {
+			checkDataStatement.setString(1, month);
+			checkDataStatement.setInt(2, year);
+
+			try (ResultSet resultSet = checkDataStatement.executeQuery()) {
+				if (resultSet.next()) {
+					int count = resultSet.getInt("count");
+					return count > 0;
+				}
+			}
+		}
+
+		return false;
+	}
 }
