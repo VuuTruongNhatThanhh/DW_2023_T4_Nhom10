@@ -9,6 +9,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
 import java.util.Date;
 
 import javax.swing.BorderFactory;
@@ -17,28 +18,48 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 import com.dw.nhom10.dw_nhom10.model.Vietlot;
+import com.dw.nhom10.dw_nhom10.model.VietlotAggregate;
 import com.dw.nhom10.dw_nhom10.view.LotteryResultUI;
 
 public class VietlotController {
+	// Khai báo các thành phần giao diện và dữ liệu
 	private LotteryResultUI lotteryResultUI = new LotteryResultUI();
 	Vietlot vietlot = new Vietlot();
+	VietlotAggregate vietlotAggregate = new VietlotAggregate();
+
 	SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 	String currentDateStr = dateFormat.format(new Date());
 
-	public VietlotController() {
+	public VietlotController() throws ParseException {
 
 		try {
+			// Lấy dữ liệu Vietlot và VietlotAggregate cho ngày hiện tại
 			Vietlot newVietlot = vietlot.getDataVietlot(currentDateStr);
+			Date date = dateFormat.parse(currentDateStr);
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTime(date);
+			String month = String.valueOf(calendar.get(Calendar.MONTH));
+			String year = String.valueOf(calendar.get(Calendar.YEAR));
+			VietlotAggregate newVietlotAggregate = vietlotAggregate.getDataVietlotAggregate(month, year);
+
+			// Xử lý trường hợp không có dữ liệu, mặc định sẽ lấy dữ liệu cho ngày
+			// 21/11/2023
 			if (newVietlot == null)
 				newVietlot = vietlot.getDataVietlot("21/11/2023");
+			if (newVietlotAggregate == null)
+				newVietlotAggregate = vietlotAggregate.getDataVietlotAggregate("11", "2023");
+
+			// Cập nhật dữ liệu
 			vietlot = newVietlot;
-			updateViews(vietlot);
+			vietlotAggregate = newVietlotAggregate;
+			updateViews(vietlot, vietlotAggregate);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
 
 	public void initController() {
+		// Thêm lắng nghe sự kiện thay đổi ngày cho dateChooser
 		getLotteryResultUI().addDateChangeListener(new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
@@ -46,6 +67,9 @@ public class VietlotController {
 					try {
 						handleDateChange();
 					} catch (SQLException e) {
+						e.printStackTrace();
+					} catch (ParseException e) {
+						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
@@ -55,27 +79,37 @@ public class VietlotController {
 		});
 	}
 
-	private void handleDateChange() throws SQLException {
+	// Xử lí khi date thay đổi
+	private void handleDateChange() throws SQLException, ParseException {
 		String selectedDate = getSelectedDateAsString();
+		Date date = dateFormat.parse(currentDateStr);
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		String month = String.valueOf(calendar.get(Calendar.MONTH));
+		String year = String.valueOf(calendar.get(Calendar.YEAR));
 		if (selectedDate != null) {
 			Vietlot vietData = vietlot.getDataVietlot(selectedDate);
-			updateViews(vietData);
+			VietlotAggregate vietDataAggregate = vietlotAggregate.getDataVietlotAggregate(month, year);
+			updateViews(vietData, vietDataAggregate);
 		}
 	}
 
-	private void updateViews(Vietlot vietData) {
-		if (vietData != null) {
+	// cập nhật view khi date thay đổi
+	private void updateViews(Vietlot vietData, VietlotAggregate vietlotAggregate) {
+		if (vietData != null && vietlotAggregate != null) {
 			updateDrawNumbers(vietData);
 			updateLotteryResult(vietData);
-			updateResultPannel(vietData);
+			updateResultPannel(vietData, vietlotAggregate);
 		} else {
-			// Handle page 404
+			// Xử lý trường hợp không tìm thấy dữ liệu
 		}
 	}
 
+	// Cập nhật trang DrawNumbersPanel
 	private void updateDrawNumbers(Vietlot vietData) {
 		if (vietData != null) {
-			lotteryResultUI.getDrawNumbersPanel().setDateLabel(new JLabel("Ngày: " + currentDateStr));
+			// Cập nhật dữ liệu giao diện cho phần hiển thị kết quả quay số
+			lotteryResultUI.getDrawNumbersPanel().setDateLabel(new JLabel("Ngày: " + vietData.getDate()));
 			lotteryResultUI.getDrawNumbersPanel().getDateLabel().setHorizontalAlignment(SwingConstants.CENTER);
 
 			lotteryResultUI.getDrawNumbersPanel()
@@ -88,8 +122,6 @@ public class VietlotController {
 			lotteryResultUI.getDrawNumbersPanel().getLabelPanel()
 					.add(lotteryResultUI.getDrawNumbersPanel().getDrawViewLabel());
 
-			lotteryResultUI.getDrawNumbersPanel().setAdditionalLabel(new JLabel(
-					"<html><div style='text-align: center; font-style:italic;'>*Các con số dự thưởng phải trùng với số kết quả nhưng không cần theo đúng thứ tự.</div></html>"));
 			lotteryResultUI.getDrawNumbersPanel().getAdditionalLabel().setHorizontalAlignment(SwingConstants.CENTER);
 
 			lotteryResultUI.getDrawNumbersPanel().add(lotteryResultUI.getDrawNumbersPanel().getLabelPanel(),
@@ -105,31 +137,37 @@ public class VietlotController {
 		}
 	}
 
+	// Cập nhật trang LotteryResultUI
 	private void updateLotteryResult(Vietlot vietData) {
+		// Cập nhật tiêu đề cho cửa sổ
 		lotteryResultUI.setTitle("Kết quả quay số mở thưởng Power " + vietData.getDate());
 		SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 		try {
+			// Đặt ngày được chọn trên dateChooser
 			lotteryResultUI.getDateChooser().setDate(dateFormat.parse(vietData.getDate()));
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
 	}
 
-	private void updateResultPannel(Vietlot vietData) {
+	// Cập nhật trang ResultPanel
+	private void updateResultPannel(Vietlot vietData, VietlotAggregate vietlotAggregate) {
 		if (vietData != null) {
-			lotteryResultUI.getResultPanel().getSecondTablePanel().setBorder(BorderFactory.createTitledBorder(
-					"Thống kê các giải đã xuất hiện nhiều nhất trong tháng " + adjustDate(vietData.getDate())));
+			// Cập nhật dữ liệu cho panel kết quả
+			lotteryResultUI.getResultPanel().getSecondTablePanel()
+					.setBorder(BorderFactory.createTitledBorder("Thống kê các giải đã xuất hiện nhiều nhất trong tháng "
+							+ vietlotAggregate.getMonth() + " năm " + vietlotAggregate.getYear()));
 
 			Object[][] dataTable = { { "JACKPOT 1", "6 số", vietData.getAmountJp1(), vietData.getJackpot1() },
 					{ "JACKPOT 2", "5 số + power", vietData.getAmountJp2(), vietData.getJackpot2() },
 					{ "Giải nhất", "5 số", vietData.getAmountFirst(), "40 Triệu" },
 					{ "Giải nhì", "4 số", vietData.getAmountSecond(), "500.000đ" },
 					{ "Giải ba", "3 số", vietData.getAmountThird(), "50.000đ" } };
-			Object[][] newDataTable = { { "JACKPOT 1", "6 số", vietData.getAmountJp1() },
-					{ "JACKPOT 2", "5 số + power", vietData.getAmountJp2() },
-					{ "Giải nhất", "5 số", vietData.getAmountFirst() },
-					{ "Giải nhì", "4 số", vietData.getAmountSecond() },
-					{ "Giải ba", "3 số", vietData.getAmountThird() } };
+			Object[][] newDataTable = { { "JACKPOT 1", "6 số", vietlotAggregate.getAmountJp1Month() },
+					{ "JACKPOT 2", "5 số + power", vietlotAggregate.getAmountJp2Month() },
+					{ "Giải nhất", "5 số", vietlotAggregate.getAmountFirstMonth() },
+					{ "Giải nhì", "4 số", vietlotAggregate.getAmountSecondMonth() },
+					{ "Giải ba", "3 số", vietlotAggregate.getAmountThirdMonth() } };
 			lotteryResultUI.getResultPanel().updateTableData(dataTable, 1);
 			lotteryResultUI.getResultPanel().updateTableData(newDataTable, 2);
 
@@ -137,6 +175,7 @@ public class VietlotController {
 	}
 
 	public static String adjustDate(String inputDate) {
+		// Điều chỉnh ngày thành tháng trước
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 		LocalDate date = LocalDate.parse(inputDate, formatter);
 
@@ -150,6 +189,7 @@ public class VietlotController {
 	}
 
 	public String getSelectedDateAsString() {
+		// Lấy ngày được chọn trên dateChooser dưới dạng chuỗi
 		Date selectedDate = getLotteryResultUI().getDateChooser().getDate();
 		if (selectedDate != null) {
 			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
@@ -159,8 +199,8 @@ public class VietlotController {
 		}
 	}
 
+	// Các phương thức getter và setter cho các thành phần giao diện và dữ liệu
 	public LotteryResultUI getLotteryResultUI() {
 		return lotteryResultUI;
 	}
-
 }

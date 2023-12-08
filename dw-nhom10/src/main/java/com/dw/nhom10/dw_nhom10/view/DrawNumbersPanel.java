@@ -21,26 +21,32 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 public class DrawNumbersPanel extends JPanel {
+	// Khai báo các biến
 	private JLabel dateLabel;
 	private JLabel drawViewLabel;
 	private JLabel additionalLabel;
-	private Integer[] numbersToDraw;
+	private Integer[] numbersToDraw = new Integer[] {};
 	JPanel labelPanel;
 
 	public DrawNumbersPanel() {
+		// Đặt bố cục cho panel
 		setLayout(new BorderLayout());
 
 		labelPanel = new JPanel(new GridLayout(2, 1));
 
+		// Khởi tạo và cấu hình các nhãn
 		dateLabel = new JLabel("Ngày: <date>");
 		dateLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		drawViewLabel = new JLabel("Kỳ quay trúng thưởng: <viewlot_draw>");
 		drawViewLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
+		// Thêm các nhãn vào panel nhỏ
 		labelPanel.add(dateLabel);
 		labelPanel.add(drawViewLabel);
 		additionalLabel = new JLabel(
 				"<html><div style='text-align: center; font-style:italic;'>*Các con số dự thưởng phải trùng với số kết quả nhưng không cần theo đúng thứ tự.</div></html>");
+
+		// Thêm panel nhỏ và nhãn bổ sung vào panel chính
 		additionalLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		add(labelPanel, BorderLayout.NORTH);
 		add(additionalLabel, BorderLayout.SOUTH);
@@ -49,14 +55,13 @@ public class DrawNumbersPanel extends JPanel {
 
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
+		// Chuyển đổi Graphics thành Graphics2D để vẽ
 		Graphics2D g2d = (Graphics2D) g;
-
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
+		// Khai báo các biến và định dạng cho việc vẽ
 		int topMargin = 25;
-
 		int startY = 40 + topMargin;
-
 		int circleDiameter = 50;
 		int squareSize = 50;
 		int panelWidth = getWidth();
@@ -68,6 +73,8 @@ public class DrawNumbersPanel extends JPanel {
 
 		FontMetrics metrics = g2d.getFontMetrics(numberFont);
 		final int[] count = { 0 };
+
+		// Lambda để vẽ số ở trung tâm của hình
 		Consumer<Shape> drawCenteredText = (shape) -> {
 			if (count[0] < numbersToDraw.length) {
 				String numberStr = numbersToDraw[count[0]].toString();
@@ -79,8 +86,10 @@ public class DrawNumbersPanel extends JPanel {
 			}
 		};
 
-		g2d.setColor(Color.YELLOW);
+		// Vẽ các hình và số
+		g2d.setColor(Color.YELLOW); // Đặt màu cho các hình
 
+		// Vẽ các hình tròn và vuông
 		for (int i = 0; i < 3; i++) {
 			int x = (int) (1.5 * spaceBetweenShapes) + circleDiameter / 2 + (spaceBetweenShapes + circleDiameter) * i;
 			g2d.fillOval(x, startY, circleDiameter, circleDiameter);
@@ -94,9 +103,10 @@ public class DrawNumbersPanel extends JPanel {
 		int squareX = spaceBetweenShapes + (spaceBetweenShapes + circleDiameter) * 3;
 		g2d.fillRect(squareX, startY + circleDiameter + topMargin, squareSize, squareSize);
 
-		g2d.setColor(Color.RED);
-		g2d.setStroke(borderStroke);
+		g2d.setColor(Color.RED); // Đặt màu viền
+		g2d.setStroke(borderStroke); // Đặt kiểu viền
 
+		// Vẽ viền và số cho các hình
 		for (int i = 0; i < 3; i++) {
 			int x = (int) (1.5 * spaceBetweenShapes) + circleDiameter / 2 + (spaceBetweenShapes + circleDiameter) * i;
 			g2d.drawOval(x, startY, circleDiameter, circleDiameter);
@@ -115,6 +125,7 @@ public class DrawNumbersPanel extends JPanel {
 		drawCenteredText.accept(new Rectangle(squareX, startY + circleDiameter + topMargin, squareSize, squareSize));
 	}
 
+	// Các phương thức setter và getter cho các biến thành viên
 	@Override
 	public Dimension getPreferredSize() {
 		return new Dimension(400, 200);

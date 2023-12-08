@@ -14,6 +14,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 public class ResultPanel extends JPanel {
+	// Khai báo các biến thành viên
 	private JTable table = new JTable();
 	private JTable newTable = new JTable();
 	private String[] columnsTable1 = { "Giải thưởng", "Trùng", "Số lượng giải", "Giá trị giải" };
@@ -21,8 +22,9 @@ public class ResultPanel extends JPanel {
 	JPanel secondTablePanel = new JPanel(new BorderLayout());
 
 	public ResultPanel() {
-		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS)); // Đặt bố cục cho panel
 
+		// Tạo và cấu hình bảng chứa kết quả hôm nay
 		DefaultTableModel tableModel = new DefaultTableModel(new Object[][] {}, columnsTable1) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
@@ -38,6 +40,8 @@ public class ResultPanel extends JPanel {
 		firstTablePanel.add(firstScrollPane);
 		add(firstTablePanel);
 
+		// Tạo và cấu hình bảng chứa thống kê các giải đã xuất hiện nhiều nhất trong
+		// tháng 11
 		DefaultTableModel newTableModel = new DefaultTableModel(new Object[][] {}, columnsTable2) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
@@ -54,6 +58,7 @@ public class ResultPanel extends JPanel {
 		add(secondTablePanel);
 	}
 
+	// Phương thức áp dụng định dạng số cho cột trong bảng
 	private void applyNumberRenderer(JTable table) {
 		DefaultTableCellRenderer numberRenderer = new DefaultTableCellRenderer() {
 			NumberFormat integerFormat = NumberFormat.getNumberInstance();
@@ -95,6 +100,7 @@ public class ResultPanel extends JPanel {
 		table.getColumnModel().getColumn(3).setCellRenderer(numberRenderer);
 	}
 
+	// Phương thức cập nhật dữ liệu cho bảng
 	public void updateTableData(Object[][] data, int tableIndex) {
 		DefaultTableModel model;
 		if (tableIndex == 1) {
@@ -110,6 +116,7 @@ public class ResultPanel extends JPanel {
 		}
 	}
 
+	// Các phương thức setter và getter cho các biến thành viên
 	public JTable getTable() {
 		return table;
 	}
