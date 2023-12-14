@@ -211,13 +211,8 @@ public class Vietlot {
 		return null;
 	}
 
-	@Override
-	public String toString() {
-		return "Vietlot [date=" + date + ", drawVietlot=" + drawVietlot + ", number1=" + number1 + ", number2="
-				+ number2 + ", number3=" + number3 + ", number4=" + number4 + ", number5=" + number5 + ", number6="
-				+ number6 + ", number7=" + number7 + ", jackpot1=" + jackpot1 + ", jackpot2=" + jackpot2
-				+ ", amountJp1=" + amountJp1 + ", amountJp2=" + amountJp2 + ", amountFirst=" + amountFirst
-				+ ", amountSecond=" + amountSecond + ", amountThird=" + amountThird + "]";
+	public VietlotAggregate getVietlotAggregate() {
+		
+		return null;
 	}
-
 }

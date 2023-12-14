@@ -8,6 +8,7 @@ import java.sql.SQLException;
 
 public class ToDM {
 	public static void main(String[] args) throws SQLException {
+		// Declare variables source my sql
 		String sourceDbUrl = "jdbc:mysql://localhost:3306/datawarehouse";
 		String sourceDbUser = "root";
 		String sourceDbPassword = "";

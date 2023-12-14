@@ -13,26 +13,30 @@ import javax.swing.JSplitPane;
 import com.toedter.calendar.JDateChooser;
 
 public class LotteryResultUI extends JFrame {
+	// Khai báo các thành phần giao diện
 	private DrawNumbersPanel drawNumbersPanel = new DrawNumbersPanel();
 	private ResultPanel resultPanel = new ResultPanel();
 	JDateChooser dateChooser;
 	private String date;
 
 	public LotteryResultUI() {
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setSize(800, 330);
-		setLocationRelativeTo(null);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Đặt hành động khi đóng cửa sổ
+		setSize(800, 330);// Đặt kích thước cửa sổ
+		setLocationRelativeTo(null); // Đặt vị trí cửa sổ giữa màn hình
 
+		// Tạo và cấu hình giao diện chia thành hai phần bằng JSplitPane
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-		splitPane.setResizeWeight(0.2);
-		splitPane.setDividerLocation(0.2);
-		splitPane.setLeftComponent(drawNumbersPanel);
-		splitPane.setRightComponent(resultPanel);
+		splitPane.setResizeWeight(0.2); // Đặt tỷ lệ kích thước của hai phần
+		splitPane.setDividerLocation(0.2); // Đặt vị trí của đường chia
+		splitPane.setLeftComponent(drawNumbersPanel); // Thiết lập panel bên trái
+		splitPane.setRightComponent(resultPanel); // Thiết lập panel bên phải
 
-		getContentPane().add(createDatePanel(), BorderLayout.NORTH);
-		getContentPane().add(splitPane, BorderLayout.CENTER);
+		getContentPane().add(createDatePanel(), BorderLayout.NORTH);// Thêm panel chọn ngày vào phần đầu cửa sổ
+		getContentPane().add(splitPane, BorderLayout.CENTER);// Thêm JSplitPane vào phần chính của cửa sổ
+
 	}
 
+	// Tạo panel chọn ngày
 	private JPanel createDatePanel() {
 		JPanel datePanel = new JPanel();
 		datePanel.setLayout(new FlowLayout(FlowLayout.CENTER));
@@ -46,6 +50,7 @@ public class LotteryResultUI extends JFrame {
 		return datePanel;
 	}
 
+	// Các phương thức getter và setter cho các thành phần giao diện và dữ liệu
 	public JDateChooser getDateChooser() {
 		return dateChooser;
 	}

@@ -20,6 +20,8 @@ public class VietlotAggregate {
 	private Integer numberAppearMost3;
 	private Integer numberAppearMost4;
 	private Integer numberAppearMost5;
+	private String month;
+	private String year;
 
 	public VietlotAggregate() {
 		// TODO Auto-generated constructor stub
@@ -27,7 +29,8 @@ public class VietlotAggregate {
 
 	public VietlotAggregate(Integer id, Integer amountJp1Month, Integer amountJp2Month, Integer amountFirstMonth,
 			Integer amountSecondMonth, Integer amountThirdMonth, Integer numberAppearMost1, Integer numberAppearMost2,
-			Integer numberAppearMost3, Integer numberAppearMost4, Integer numberAppearMost5) {
+			Integer numberAppearMost3, Integer numberAppearMost4, Integer numberAppearMost5, String month,
+			String year) {
 		super();
 		this.id = id;
 		this.amountJp1Month = amountJp1Month;
@@ -40,6 +43,8 @@ public class VietlotAggregate {
 		this.numberAppearMost3 = numberAppearMost3;
 		this.numberAppearMost4 = numberAppearMost4;
 		this.numberAppearMost5 = numberAppearMost5;
+		this.month = month;
+		this.year = year;
 	}
 
 	public Integer getId() {
@@ -130,35 +135,68 @@ public class VietlotAggregate {
 		this.numberAppearMost5 = numberAppearMost5;
 	}
 
-	public VietlotAggregate getDataVietlotAggregate(String date) throws SQLException {
+	public String getMonth() {
+		return month;
+	}
+
+	public void setMonth(String month) {
+		this.month = month;
+	}
+
+	public String getYear() {
+		return year;
+	}
+
+	public void setYear(String year) {
+		this.year = year;
+	}
+
+	public VietlotAggregate getDataVietlotAggregate(String month, String year) throws SQLException {
 		DatabaseConfig config = new DatabaseConfig("db5");
 		String dbUrl_5 = config.getJdbcUrl();
 		String username = config.getUsername();
 		String password = config.getPassword();
 
 		Connection targetConn = DriverManager.getConnection(dbUrl_5, username, password);
-		String selectQuery = "SELECT * FROM dm_vietlot_aggregate WHERE date = ?"; // Assuming the table name is
-																					// dm_vietlot_aggregate
+		String selectQuery = "SELECT * FROM aggregate_vietlot WHERE month = ? AND year = ?";
 
 		try (PreparedStatement selectStatement = targetConn.prepareStatement(selectQuery)) {
-			selectStatement.setString(1, date);
+			selectStatement.setString(1, month);
+			selectStatement.setString(2, year);
 
 			try (ResultSet resultSet = selectStatement.executeQuery()) {
 				if (resultSet.next()) {
-					VietlotAggregate vietlotAggregate = new VietlotAggregate(resultSet.getInt("id"),
-							resultSet.getInt("amount_jp1_month"), resultSet.getInt("amount_jp2_month"),
-							resultSet.getInt("amount_first_month"), resultSet.getInt("amount_second_month"),
-							resultSet.getInt("amount_third_month"), resultSet.getInt("number_appear_most1"),
-							resultSet.getInt("number_appear_most2"), resultSet.getInt("number_appear_most3"),
-							resultSet.getInt("number_appear_most4"), resultSet.getInt("number_appear_most5"));
-					return vietlotAggregate;
+					// Tạo một đối tượng VietlotAggregate và thiết lập các giá trị từ resultSet
+					VietlotAggregate vietlot = new VietlotAggregate();
+					vietlot.setMonth(resultSet.getString("month"));
+					vietlot.setYear(resultSet.getString("year"));
+					vietlot.setAmountJp1Month(resultSet.getInt("amount_jp1_month"));
+					vietlot.setAmountJp2Month(resultSet.getInt("amount_jp2_month"));
+					vietlot.setAmountFirstMonth(resultSet.getInt("amount_first_month"));
+					vietlot.setAmountSecondMonth(resultSet.getInt("amount_second_month"));
+					vietlot.setAmountThirdMonth(resultSet.getInt("amount_third_month"));
+					vietlot.setNumberAppearMost1(resultSet.getInt("number_appear_most1"));
+					vietlot.setNumberAppearMost2(resultSet.getInt("number_appear_most2"));
+					vietlot.setNumberAppearMost3(resultSet.getInt("number_appear_most3"));
+					vietlot.setNumberAppearMost4(resultSet.getInt("number_appear_most4"));
+					vietlot.setNumberAppearMost5(resultSet.getInt("number_appear_most5"));
+
+					return vietlot;
 				}
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw e;
+		} finally {
+			if (targetConn != null) {
+				targetConn.close();
+			}
 		}
 		return null;
 	}
 
+	public VietlotAggregate getVietlotAggregate() {
+
+		return null;
+	}
 }
