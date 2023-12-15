@@ -12,7 +12,7 @@ public class ToAggregate {
 
 	public static void main(String[] args) {
 		/**
-		 * 1.Connect to database of datawarehouse and aggregate
+		 * 2.Connect to database of datawarehouse and aggregate
 		 **/
 		// connect to database of datawarehouse
 		DatabaseConfig datawarehouse = new DatabaseConfig("db3");
@@ -35,27 +35,30 @@ public class ToAggregate {
 		try (Connection connection = DriverManager.getConnection(dbUrl_ , username, password);
 				Connection connection1 = DriverManager.getConnection(dbUrl_2, username1, password1)) {
 			/**
-			 * 2.Check if that date is the first day of the month
+			 * 3.Check if that date is the first day of the month
 			 * 
-			 * yes: go to step 3 no: Aggregation skipped
+			 * yes: go to step 4
+			 * no: Aggregation skipped
 			 **/
 			if (currentDate.getDayOfMonth() == 1) {
 				/**
-				 * 3. Check if the date is January 1st
+				 *4. Check if the date is January 1st
+				 *yes: go to 4.2
+				 *no: go to 4.1
 				 *
-				 * 
 				 **/
 				if (currentDate.getDayOfMonth() == 1 && currentDate.getMonthValue() == 1) {
 
 					/**
 					 * If it's the first day of January, 
-					 * 3.2 Get data from December of the previous year
+					 * 4.2 Get data from December of the previous year
 					 **/
+					
 					currentDate = currentDate.minusYears(1);
 				}
 				/**
 				 * If it's not the first day of January, 
-				 * 3.1. Get data from the previous month of the year
+				 * 4.1. Get data from the previous month of the year
 				 **/
 				// Calculate the previous month and year
 				LocalDate previousMonth = currentDate.minusMonths(1);
@@ -84,7 +87,7 @@ public class ToAggregate {
 				int number_appear_most4 = 0;
 				int number_appear_most5 = 0;
 				/**
-				 * 4 .Select the number of each prize for the month from dw_vietlot table
+				 * 5. Select the number of each prize for the month from dw_vietlot table
 				 **/
 				// Calculate amounts for each column
 				String amountQuery = "SELECT SUM(amount_jp1) as a1, SUM(amount_jp2) as a2, SUM(amount_first) as a3, SUM(amount_second) as a4, SUM(amount_third) as a5\n"
@@ -108,7 +111,7 @@ public class ToAggregate {
 					}
 				}
 				/**
-				 * 5.Select the 5 numbers that appear the most in the 7 winning numbers of the month from dw_viettlot table
+				 * 6 .Select the 5 numbers that appear the most in the 7 winning numbers of the month from dw_viettlot table
 				 **/
 				// Set values for number_appear_most columns
 				String numberAppearQuery = "SELECT number, COUNT(*) AS frequency\n" + "FROM (\n"
@@ -163,14 +166,14 @@ public class ToAggregate {
 					}
 				}
 				/**
-				 * 6.Check if data for the specified month and year already exists 
+				 * 7 .Check if data for the specified month and year in the aggregate_vietlot table of the aggreagte database already exists
 				 * 
-				 * no: go to step 6.1
-				 * yes : go to step 6.2
+				 * no: go to step 7.1
+				 * yes : go to step 7.2
 				 **/
 				if (!dataExists(connection1, previousMonthString, currentYear)) {
 					/**
-					 * 6.1 . Insert the retrieved data into the aggregate_vietlot table in the aggregate database		 
+					 * 7.1 . Insert the retrieved data into the aggregate_vietlot table in the aggregate database		 
 					 **/
 					String sqlQuery = "INSERT INTO aggregate_vietlot (month, year, amount_jp1_month, amount_jp2_month, amount_first_month, amount_second_month, amount_third_month, number_appear_most1, number_appear_most2, number_appear_most3, number_appear_most4, number_appear_most5)\n"
 							+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -198,7 +201,7 @@ public class ToAggregate {
 					}
 				}
 				/**
-				 * 6.2 . Update the retrieved data to the row with the specified month and year in the aggregate_vietlot table of database aggregate
+				 * 7.2 . Update the retrieved data to the row with the specified month and year in the aggregate_vietlot table of database aggregate
 
 				 **/
 				else {
