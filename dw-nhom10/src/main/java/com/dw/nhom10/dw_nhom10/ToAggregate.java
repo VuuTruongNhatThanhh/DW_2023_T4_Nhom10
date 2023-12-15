@@ -12,14 +12,28 @@ public class ToAggregate {
 
 	public static void main(String[] args) {
 		/**
-		 * 1.Connect to database of datawarehouse
+		 * 1.Connect to database of datawarehouse and aggregate
 		 **/
-		String jdbcUrl = "jdbc:mysql://localhost:3306/datawarehouse";
-		String username = "root";
-		String password = "";
+		// connect to database of datawarehouse
+		DatabaseConfig datawarehouse = new DatabaseConfig("db3");
+    	String dbUrl_ = datawarehouse.getJdbcUrl();
+    	String username = datawarehouse.getUsername();
+    	String password = datawarehouse.getPassword();
+    	
+    	// connect to database of aggregate
+    	DatabaseConfig aggregate = new DatabaseConfig("db5");
+    	String dbUrl_2 = aggregate.getJdbcUrl();
+    	String username1 = aggregate.getUsername();
+    	String password1 = aggregate.getPassword();
+		
+    	
+		
+		
+		
 		LocalDate currentDate = LocalDate.now();
 
-		try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password)) {
+		try (Connection connection = DriverManager.getConnection(dbUrl_ , username, password);
+				Connection connection1 = DriverManager.getConnection(dbUrl_2, username1, password1)) {
 			/**
 			 * 2.Check if that date is the first day of the month
 			 * 
@@ -154,15 +168,15 @@ public class ToAggregate {
 				 * no: go to step 6.1
 				 * yes : go to step 6.2
 				 **/
-				if (!dataExists(connection, previousMonthString, currentYear)) {
+				if (!dataExists(connection1, previousMonthString, currentYear)) {
 					/**
 					 * 6.1 . Insert the retrieved data into the aggregate_vietlot table in the aggregate database		 
 					 **/
-					String sqlQuery = "INSERT INTO `aggregate`.aggregate_vietlot (month, year, amount_jp1_month, amount_jp2_month, amount_first_month, amount_second_month, amount_third_month, number_appear_most1, number_appear_most2, number_appear_most3, number_appear_most4, number_appear_most5)\n"
+					String sqlQuery = "INSERT INTO aggregate_vietlot (month, year, amount_jp1_month, amount_jp2_month, amount_first_month, amount_second_month, amount_third_month, number_appear_most1, number_appear_most2, number_appear_most3, number_appear_most4, number_appear_most5)\n"
 							+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 					// Prepare the SQL statement
-					try (PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery)) {
+					try (PreparedStatement preparedStatement = connection1.prepareStatement(sqlQuery)) {
 						// Set values for each parameter
 						preparedStatement.setString(1, month);
 						preparedStatement.setString(2, year);
@@ -188,13 +202,13 @@ public class ToAggregate {
 
 				 **/
 				else {
-					String updateQuery = "UPDATE `aggregate`.aggregate_vietlot SET " + "amount_jp1_month = ?, "
+					String updateQuery = "UPDATE aggregate_vietlot SET " + "amount_jp1_month = ?, "
 							+ "amount_jp2_month = ?, " + "amount_first_month = ?, " + "amount_second_month = ?, "
 							+ "amount_third_month = ?, " + "number_appear_most1 = ?, " + "number_appear_most2 = ?, "
 							+ "number_appear_most3 = ?, " + "number_appear_most4 = ?, " + "number_appear_most5 = ? "
 							+ "WHERE month = ? AND year = ?";
 
-					try (PreparedStatement updateStatement = connection.prepareStatement(updateQuery)) {
+					try (PreparedStatement updateStatement = connection1.prepareStatement(updateQuery)) {
 						// Set values for each parameter
 						updateStatement.setDouble(1, amount_jp1_month);
 						updateStatement.setDouble(2, amount_jp2_month);
@@ -229,10 +243,10 @@ public class ToAggregate {
 
 	}
 
-	private static boolean dataExists(Connection connection, String month, int year) throws SQLException {
-		String checkDataQuery = "SELECT COUNT(*) AS count FROM `aggregate`.aggregate_vietlot WHERE month = ? AND year = ?";
+	private static boolean dataExists(Connection connection1, String month, int year) throws SQLException {
+		String checkDataQuery = "SELECT COUNT(*) AS count FROM aggregate_vietlot WHERE month = ? AND year = ?";
 
-		try (PreparedStatement checkDataStatement = connection.prepareStatement(checkDataQuery)) {
+		try (PreparedStatement checkDataStatement = connection1.prepareStatement(checkDataQuery)) {
 			checkDataStatement.setString(1, month);
 			checkDataStatement.setInt(2, year);
 
