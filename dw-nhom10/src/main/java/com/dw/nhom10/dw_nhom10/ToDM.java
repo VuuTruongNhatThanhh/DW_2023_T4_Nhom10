@@ -18,12 +18,12 @@ public class ToDM {
 		String targetDbPassword = "";
 		try (
 				/**
-				 * 1. Connect to DB warehouse and datamart
+				 * 2. Connect to DB warehouse and datamart
 				 **/
 				Connection sourceConn = DriverManager.getConnection(sourceDbUrl, sourceDbUser, sourceDbPassword);
 				Connection targetConn = DriverManager.getConnection(targetDbUrl, targetDbUser, targetDbPassword);) {
 			/**
-			 * 2. query data warehouse
+			 * 3.Select all data from data warehouse
 			 */
 			String selectQuery = "SELECT * FROM dw_vietlot";
 			try (PreparedStatement selectStatement = sourceConn.prepareStatement(selectQuery);
@@ -33,12 +33,12 @@ public class ToDM {
 				try (PreparedStatement insertStatement = targetConn.prepareStatement(insertQuery)) {
 					while (resultSet.next()) {
 						/**
-						 * 3. Check if the current data from data mart already exists
+						 * 4. Check if datamart is exists data now
 						 */
 						String dateValue = resultSet.getString("date");
 						if (!dateExistsInTarget(dateValue, targetConn)) {
 							/**
-							 * 4. If the data doesn't exist, insert it
+							 * 5. Insert data from warehouse to datamart
 							 */
 							insertStatement.setString(1, dateValue);
 							for (int i = 2; i <= 16; i++) {
