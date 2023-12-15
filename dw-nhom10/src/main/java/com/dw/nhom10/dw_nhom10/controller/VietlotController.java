@@ -44,10 +44,10 @@ public class VietlotController {
 
 			// Xử lý trường hợp không có dữ liệu, mặc định sẽ lấy dữ liệu cho ngày
 			// 21/11/2023
+			if (newVietlotAggregate == null || newVietlot == null)
+				newVietlotAggregate = vietlotAggregate.getDataVietlotAggregate("11", "2023");
 			if (newVietlot == null)
 				newVietlot = vietlot.getDataVietlot("21/11/2023");
-			if (newVietlotAggregate == null)
-				newVietlotAggregate = vietlotAggregate.getDataVietlotAggregate("11", "2023");
 
 			// Cập nhật dữ liệu
 			vietlot = newVietlot;
@@ -82,7 +82,7 @@ public class VietlotController {
 	// Xử lí khi date thay đổi
 	private void handleDateChange() throws SQLException, ParseException {
 		String selectedDate = getSelectedDateAsString();
-		Date date = dateFormat.parse(currentDateStr);
+		Date date = dateFormat.parse(selectedDate);
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
 		String month = String.valueOf(calendar.get(Calendar.MONTH));
