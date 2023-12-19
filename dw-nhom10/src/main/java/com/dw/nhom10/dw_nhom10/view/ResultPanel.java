@@ -111,7 +111,6 @@ public class ResultPanel extends JPanel {
 		}
 		model.setRowCount(0);
 		for (Object[] row : data) {
-			System.out.println("RUN");
 			model.addRow(row);
 		}
 	}

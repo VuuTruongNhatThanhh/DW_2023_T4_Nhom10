@@ -9,19 +9,22 @@ import java.sql.SQLException;
 public class ToDM {
 	public static void main(String[] args) throws SQLException {
 		// Declare variables source my sql
-		String sourceDbUrl = "jdbc:mysql://localhost:3306/datawarehouse";
-		String sourceDbUser = "root";
-		String sourceDbPassword = "";
+		DatabaseConfig datawarehouse = new DatabaseConfig("db3");
+		String dbUrl_ = datawarehouse.getJdbcUrl();
+		String username = datawarehouse.getUsername();
+		String password = datawarehouse.getPassword();
 
-		String targetDbUrl = "jdbc:mysql://localhost:3306/datamart";
-		String targetDbUser = "root";
-		String targetDbPassword = "";
+		// connect to database of aggregate
+		DatabaseConfig aggregate = new DatabaseConfig("db4");
+		String dbUrl_2 = aggregate.getJdbcUrl();
+		String username1 = aggregate.getUsername();
+		String password1 = aggregate.getPassword();
 		try (
 				/**
 				 * 2. Connect to DB warehouse and datamart
 				 **/
-				Connection sourceConn = DriverManager.getConnection(sourceDbUrl, sourceDbUser, sourceDbPassword);
-				Connection targetConn = DriverManager.getConnection(targetDbUrl, targetDbUser, targetDbPassword);) {
+				Connection sourceConn = DriverManager.getConnection(dbUrl_, username, password);
+				Connection targetConn = DriverManager.getConnection(dbUrl_2, username1, password1);) {
 			/**
 			 * 3.Select all data from data warehouse
 			 */
@@ -36,12 +39,15 @@ public class ToDM {
 						 * 4. Check if datamart is exists data now
 						 */
 						String dateValue = resultSet.getString("date");
+						System.out.println("dateValue: " + dateValue);
+
 						if (!dateExistsInTarget(dateValue, targetConn)) {
 							/**
 							 * 5. Insert data from warehouse to datamart
 							 */
 							insertStatement.setString(1, dateValue);
-							for (int i = 2; i <= 16; i++) {
+							insertStatement.setString(2, resultSet.getString("draw_vietlot"));
+							for (int i = 3; i <= 16; i++) {
 								insertStatement.setLong(i, resultSet.getLong(i));
 							}
 							insertStatement.executeUpdate();
