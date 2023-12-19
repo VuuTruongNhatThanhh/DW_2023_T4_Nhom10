@@ -56,7 +56,7 @@ public class ExtractData {
 	/**
 	 * 3. Insert into log status SE (start extract)	 
 	 */
-          String sqlQuery1 = "INSERT INTO log (id_config, time_extract, id_date, status_extract) VALUES (1, TIME(NOW()), CURDATE(), 'SE');";
+          String sqlQuery1 = "INSERT INTO log (id_config, time_extract, id_date, status_extract) VALUES (1, DATE_ADD(NOW(), INTERVAL 7 HOUR), CURDATE(), 'SE');";
 
     /**
      * 4. Select source_link, element(1-16), link_save_excel from config  
@@ -434,7 +434,7 @@ public class ExtractData {
           /**
            * If success, insert into log status CE      
            */
-                String sqlQuery20 = "INSERT INTO log (id_config, time_extract, id_date, status_extract) VALUES (1, TIME(NOW()), CURDATE(), 'CE');";
+                String sqlQuery20 = "INSERT INTO log (id_config, time_extract, id_date, status_extract) VALUES (1, DATE_ADD(NOW(), INTERVAL 7 HOUR), CURDATE(), 'CE');";
                 PreparedStatement preparedStatement20 = connection.prepareStatement(sqlQuery20);
                 int rowsAffected2 = preparedStatement20.executeUpdate();
                 System.out.println("status CE đã được thêm vào bảng log");
@@ -442,7 +442,7 @@ public class ExtractData {
            /**
             * If not success, insert into log status FE
             */
-            	String sqlQuery21 = "INSERT INTO log (id_config, time_extract, id_date, status_extract) VALUES (1, TIME(NOW()), CURDATE(), 'FE');";
+            	String sqlQuery21 = "INSERT INTO log (id_config, time_extract, id_date, status_extract) VALUES (1, DATE_ADD(NOW(), INTERVAL 7 HOUR), CURDATE(), 'FE');";
                 PreparedStatement preparedStatement21 = connection.prepareStatement(sqlQuery21);
                 int rowsAffected3 = preparedStatement21.executeUpdate();
                 System.out.println("status FE đã được thêm vào bảng log");
